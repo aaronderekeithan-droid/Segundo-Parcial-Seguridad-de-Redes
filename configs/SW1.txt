@@ -1,0 +1,134 @@
+Building configuration...
+
+Current configuration : 2111 bytes
+!
+! Last configuration change at 15:05:07 UTC Fri Nov 13 2026
+!
+version 15.2
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname SW1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$D7OU$bocJYp7VFmDHGKDXB7sSi1
+!
+username admin privilege 15 secret 5 $1$8jrO$h/ct5e6w1AmI3wx296Anm.
+aaa new-model
+!
+!
+aaa group server radius NPS-GRP
+ server name NPS
+!
+aaa authentication login CON-LOCAL local
+aaa authentication login VTY-RADIUS group NPS-GRP local
+aaa authorization exec VTY-RADIUS group NPS-GRP local 
+!
+!
+!
+!
+!
+!
+aaa session-id common
+!
+!
+!
+!
+!
+!
+!
+!
+no ip bootp server
+no ip domain-lookup
+ip domain-name lab.local
+ip cef
+no ipv6 cef
+!
+!
+!
+spanning-tree mode rapid-pvst
+spanning-tree extend system-id
+!
+vlan internal allocation policy ascending
+no cdp run
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Ethernet0/0
+!
+interface Ethernet0/1
+!
+interface Ethernet0/2
+!
+interface Ethernet0/3
+!
+interface Vlan1
+ ip address 10.8.25.2 255.255.255.0
+!
+ip default-gateway 10.8.25.1
+ip forward-protocol nd
+!
+no ip http server
+no ip http secure-server
+!
+ip ssh time-out 60
+ip ssh version 2
+!
+ip access-list standard SNMP-RO
+ permit 10.8.25.0 0.0.0.255
+ip access-list standard VTY-ACL
+ permit 10.8.25.11
+ deny   any log
+!
+!
+ip radius source-interface Vlan1 
+logging host 10.8.25.11
+!
+!
+snmp-server community ITLA0800ro RO SNMP-RO
+snmp-server location ITLA-Lab-2025-0800
+snmp-server contact aaron.hernandez
+!
+!
+radius server NPS
+ address ipv4 10.8.25.5 auth-port 1812 acct-port 1813
+ timeout 3
+ retransmit 1
+ key 7 06340E25455B1A545747405E14
+!
+!
+control-plane
+!
+banner exec ^C Sesion autorizada. Toda la actividad queda registrada. ^C
+banner login ^C ACCESO RESTRINGIDO. Solo personal autorizado. Toda la actividad es registrada y monitoreada. ^C
+banner motd ^C Equipo del laboratorio de Seguridad de Redes - ITLA. ^C
+!
+line con 0
+ logging synchronous
+ login authentication CON-LOCAL
+line aux 0
+line vty 0 4
+ access-class VTY-ACL in
+ authorization exec VTY-RADIUS
+ login authentication VTY-RADIUS
+ transport input ssh
+!
+!
+end
